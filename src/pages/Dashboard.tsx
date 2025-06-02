@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,7 +8,7 @@ import { ChartBar, Search, User, TrendingUp, TrendingDown, Activity } from 'luci
 import { Link } from 'react-router-dom';
 import PriceChart from '@/components/Dashboard/PriceChart';
 import RecommendationCard from '@/components/Dashboard/RecommendationCard';
-import { agriculturalData, getUniqueProducts, getUniqueClassifications, getUniqueStates, filterDataWithClassification } from '@/data/sampleData';
+import { agriculturalData, getUniqueProducts, filterDataWithClassification } from '@/data/sampleData';
 
 const Dashboard = () => {
   const [selectedProduct, setSelectedProduct] = useState<string>('all');
@@ -16,20 +16,68 @@ const Dashboard = () => {
   const [selectedState, setSelectedState] = useState<string>('all');
   
   const products = getUniqueProducts();
-  const classifications = getUniqueClassifications();
-  const states = getUniqueStates();
   
-  // Updated filtering logic to handle 'all' values and include classification
-  const filteredData = selectedProduct === 'all' && selectedClassification === 'all' && selectedState === 'all' 
-    ? agriculturalData.slice(0, 5)
-    : filterDataWithClassification(
-        selectedProduct === 'all' ? '' : selectedProduct,
-        selectedClassification === 'all' ? '' : selectedClassification, 
-        selectedState === 'all' ? '' : selectedState
-      );
+  // Filtros dependentes
+  const availableClassifications = useMemo(() => {
+    if (selectedProduct === 'all') {
+      return [...new Set(agriculturalData.map(item => item.classificao_produto))];
+    }
+    return [...new Set(agriculturalData
+      .filter(item => item.produto === selectedProduct)
+      .map(item => item.classificao_produto))];
+  }, [selectedProduct]);
 
-  // Dados para gráficos e recomendações
+  const availableStates = useMemo(() => {
+    if (selectedProduct === 'all' && selectedClassification === 'all') {
+      return [...new Set(agriculturalData.map(item => item.uf))];
+    }
+    return [...new Set(agriculturalData
+      .filter(item => {
+        const matchesProduct = selectedProduct === 'all' || item.produto === selectedProduct;
+        const matchesClassification = selectedClassification === 'all' || item.classificao_produto === selectedClassification;
+        return matchesProduct && matchesClassification;
+      })
+      .map(item => item.uf))];
+  }, [selectedProduct, selectedClassification]);
+  
+  // Dados filtrados para gráficos (com estado)
+  const filteredData = useMemo(() => {
+    if (selectedProduct === 'all' && selectedClassification === 'all' && selectedState === 'all') {
+      return agriculturalData.slice(0, 5);
+    }
+    return filterDataWithClassification(
+      selectedProduct === 'all' ? '' : selectedProduct,
+      selectedClassification === 'all' ? '' : selectedClassification, 
+      selectedState === 'all' ? '' : selectedState
+    );
+  }, [selectedProduct, selectedClassification, selectedState]);
+
+  // Dados para recomendações (sem filtro de estado)
+  const recommendationData = useMemo(() => {
+    if (selectedProduct === 'all' && selectedClassification === 'all') {
+      return agriculturalData;
+    }
+    return filterDataWithClassification(
+      selectedProduct === 'all' ? '' : selectedProduct,
+      selectedClassification === 'all' ? '' : selectedClassification,
+      '' // Sem filtro de estado para recomendações
+    );
+  }, [selectedProduct, selectedClassification]);
+
   const displayData = filteredData.length > 0 ? filteredData : agriculturalData.slice(0, 5);
+
+  const handleProductChange = (value: string) => {
+    setSelectedProduct(value);
+    // Reset classificação e estado quando produto muda
+    setSelectedClassification('all');
+    setSelectedState('all');
+  };
+
+  const handleClassificationChange = (value: string) => {
+    setSelectedClassification(value);
+    // Reset estado quando classificação muda
+    setSelectedState('all');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
@@ -84,11 +132,11 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Produto</label>
-                <Select value={selectedProduct} onValueChange={setSelectedProduct}>
+                <Select value={selectedProduct} onValueChange={handleProductChange}>
                   <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
                     <SelectValue placeholder="Todos os produtos" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl border-0">
+                  <SelectContent className="bg-white shadow-xl border-0 z-50">
                     <SelectItem value="all" className="font-medium">Todos os produtos</SelectItem>
                     {products.map(product => (
                       <SelectItem key={product} value={product} className="hover:bg-emerald-50">
@@ -101,13 +149,13 @@ const Dashboard = () => {
               
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Classificação</label>
-                <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                <Select value={selectedClassification} onValueChange={handleClassificationChange}>
                   <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
                     <SelectValue placeholder="Todas as classificações" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl border-0">
+                  <SelectContent className="bg-white shadow-xl border-0 z-50">
                     <SelectItem value="all" className="font-medium">Todas as classificações</SelectItem>
-                    {classifications.map(classification => (
+                    {availableClassifications.map(classification => (
                       <SelectItem key={classification} value={classification} className="hover:bg-emerald-50">
                         {classification}
                       </SelectItem>
@@ -122,9 +170,9 @@ const Dashboard = () => {
                   <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
                     <SelectValue placeholder="Todos os estados" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl border-0">
+                  <SelectContent className="bg-white shadow-xl border-0 z-50">
                     <SelectItem value="all" className="font-medium">Todos os estados</SelectItem>
-                    {states.map(state => (
+                    {availableStates.map(state => (
                       <SelectItem key={state} value={state} className="hover:bg-emerald-50">
                         {state}
                       </SelectItem>
@@ -176,7 +224,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-emerald-800">
-                {(displayData.reduce((acc, item) => acc + item.acuracia_modelo_perc, 0) / displayData.length).toFixed(1)}%
+                {displayData.length > 0 ? (displayData.reduce((acc, item) => acc + item.acuracia_modelo_perc, 0) / displayData.length).toFixed(1) : '0'}%
               </div>
               <p className="text-xs text-emerald-600 mt-1">precisão do modelo</p>
             </CardContent>
@@ -191,11 +239,11 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-800">
-                +{Math.max(...displayData.map(item => {
+                +{displayData.length > 0 ? Math.max(...displayData.map(item => {
                   const current = item.preco_atual_mai || 0;
                   const predicted = item.previsao_jun || 0;
                   return current > 0 ? ((predicted - current) / current) * 100 : 0;
-                })).toFixed(1)}%
+                })).toFixed(1) : '0'}%
               </div>
               <p className="text-xs text-green-600 mt-1">oportunidade de ganho</p>
             </CardContent>
@@ -210,7 +258,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-purple-800">
-                {selectedState === 'all' ? states.length : 1}
+                {selectedState === 'all' ? availableStates.length : 1}
               </div>
               <p className="text-xs text-purple-600 mt-1">regiões analisadas</p>
             </CardContent>
@@ -295,10 +343,11 @@ const Dashboard = () => {
             <p className="text-gray-600">Insights baseados em inteligência artificial para suas decisões</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {displayData.slice(0, 6).map((item, index) => (
+            {recommendationData.slice(0, 6).map((item, index) => (
               <RecommendationCard
-                key={index}
+                key={`${item.produto}-${item.classificao_produto}-${item.uf}-${index}`}
                 product={item.produto}
+                classification={item.classificao_produto}
                 currentPrice={item.preco_atual_mai || 0}
                 predictedPrice={item.previsao_jun || 0}
                 accuracy={item.acuracia_modelo_perc}

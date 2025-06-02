@@ -6,6 +6,7 @@ import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface RecommendationCardProps {
   product: string;
+  classification: string;
   currentPrice: number;
   predictedPrice: number;
   accuracy: number;
@@ -14,6 +15,7 @@ interface RecommendationCardProps {
 
 const RecommendationCard: React.FC<RecommendationCardProps> = ({
   product,
+  classification,
   currentPrice,
   predictedPrice,
   accuracy,
@@ -52,7 +54,8 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-lg">{product}</CardTitle>
-            <CardDescription>{state}</CardDescription>
+            <CardDescription className="text-sm">{classification}</CardDescription>
+            <CardDescription className="text-xs text-gray-500">{state}</CardDescription>
           </div>
           <Badge className={recommendation.color}>
             {recommendation.action}
