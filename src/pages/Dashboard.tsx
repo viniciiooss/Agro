@@ -11,12 +11,19 @@ import RecommendationCard from '@/components/Dashboard/RecommendationCard';
 import { agriculturalData, getUniqueProducts, getUniqueStates, filterData } from '@/data/sampleData';
 
 const Dashboard = () => {
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
-  const [selectedState, setSelectedState] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<string>('all');
+  const [selectedState, setSelectedState] = useState<string>('all');
   
   const products = getUniqueProducts();
   const states = getUniqueStates();
-  const filteredData = filterData(selectedProduct, selectedState);
+  
+  // Updated filtering logic to handle 'all' values
+  const filteredData = selectedProduct === 'all' && selectedState === 'all' 
+    ? agriculturalData.slice(0, 5)
+    : filterData(
+        selectedProduct === 'all' ? '' : selectedProduct, 
+        selectedState === 'all' ? '' : selectedState
+      );
 
   // Dados para gráficos e recomendações
   const displayData = filteredData.length > 0 ? filteredData : agriculturalData.slice(0, 5);
@@ -75,7 +82,7 @@ const Dashboard = () => {
                     <SelectValue placeholder="Todos os produtos" />
                   </SelectTrigger>
                   <SelectContent className="bg-white z-50">
-                    <SelectItem value="">Todos os produtos</SelectItem>
+                    <SelectItem value="all">Todos os produtos</SelectItem>
                     {products.map(product => (
                       <SelectItem key={product} value={product}>
                         {product}
@@ -91,7 +98,7 @@ const Dashboard = () => {
                     <SelectValue placeholder="Todos os estados" />
                   </SelectTrigger>
                   <SelectContent className="bg-white z-50">
-                    <SelectItem value="">Todos os estados</SelectItem>
+                    <SelectItem value="all">Todos os estados</SelectItem>
                     {states.map(state => (
                       <SelectItem key={state} value={state}>
                         {state}
@@ -103,8 +110,8 @@ const Dashboard = () => {
               <div className="flex items-end">
                 <Button 
                   onClick={() => {
-                    setSelectedProduct('');
-                    setSelectedState('');
+                    setSelectedProduct('all');
+                    setSelectedState('all');
                   }}
                   variant="outline"
                   className="w-full"
@@ -169,7 +176,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-agro-700">
-                {selectedState ? 1 : states.length}
+                {selectedState === 'all' ? states.length : 1}
               </div>
             </CardContent>
           </Card>
