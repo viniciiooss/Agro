@@ -4,24 +4,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, ChartBar, Search, User, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { ChartBar, Search, User, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PriceChart from '@/components/Dashboard/PriceChart';
 import RecommendationCard from '@/components/Dashboard/RecommendationCard';
-import { agriculturalData, getUniqueProducts, getUniqueStates, filterData } from '@/data/sampleData';
+import { agriculturalData, getUniqueProducts, getUniqueClassifications, getUniqueStates, filterDataWithClassification } from '@/data/sampleData';
 
 const Dashboard = () => {
   const [selectedProduct, setSelectedProduct] = useState<string>('all');
+  const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [selectedState, setSelectedState] = useState<string>('all');
   
   const products = getUniqueProducts();
+  const classifications = getUniqueClassifications();
   const states = getUniqueStates();
   
-  // Updated filtering logic to handle 'all' values
-  const filteredData = selectedProduct === 'all' && selectedState === 'all' 
+  // Updated filtering logic to handle 'all' values and include classification
+  const filteredData = selectedProduct === 'all' && selectedClassification === 'all' && selectedState === 'all' 
     ? agriculturalData.slice(0, 5)
-    : filterData(
-        selectedProduct === 'all' ? '' : selectedProduct, 
+    : filterDataWithClassification(
+        selectedProduct === 'all' ? '' : selectedProduct,
+        selectedClassification === 'all' ? '' : selectedClassification, 
         selectedState === 'all' ? '' : selectedState
       );
 
@@ -74,11 +77,11 @@ const Dashboard = () => {
               Filtros de Análise
             </CardTitle>
             <CardDescription className="text-emerald-600">
-              Selecione o produto e estado para análise detalhada
+              Selecione o produto, classificação e estado para análise detalhada
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Produto</label>
                 <Select value={selectedProduct} onValueChange={setSelectedProduct}>
@@ -95,6 +98,24 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Classificação</label>
+                <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
+                    <SelectValue placeholder="Todas as classificações" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white shadow-xl border-0">
+                    <SelectItem value="all" className="font-medium">Todas as classificações</SelectItem>
+                    {classifications.map(classification => (
+                      <SelectItem key={classification} value={classification} className="hover:bg-emerald-50">
+                        {classification}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Estado</label>
                 <Select value={selectedState} onValueChange={setSelectedState}>
@@ -111,10 +132,12 @@ const Dashboard = () => {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div className="flex items-end">
                 <Button 
                   onClick={() => {
                     setSelectedProduct('all');
+                    setSelectedClassification('all');
                     setSelectedState('all');
                   }}
                   variant="outline"
@@ -202,7 +225,7 @@ const Dashboard = () => {
                 key={index}
                 data={[item]}
                 title="Evolução de Preços"
-                product={`${item.produto} - ${item.uf}`}
+                product={`${item.produto} - ${item.classificao_produto} - ${item.uf}`}
               />
             ))}
           </div>
@@ -284,32 +307,6 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
-
-        {/* Data Upload Section */}
-        <Card className="border-2 border-dashed border-emerald-200 bg-gradient-to-r from-emerald-50/50 to-green-50/50 shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="text-emerald-700 flex items-center justify-center">
-              <ArrowDown className="w-8 h-8 mx-auto mb-2" />
-              Adicionar Mais Dados
-            </CardTitle>
-            <CardDescription className="text-emerald-600">
-              Para adicionar o resto dos dados do CSV, edite o arquivo: 
-              <code className="bg-emerald-100 px-2 py-1 rounded text-sm ml-1 text-emerald-800">
-                src/data/sampleData.ts
-              </code>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-emerald-700 mb-4">
-              O arquivo atual contém apenas uma amostra dos dados. 
-              Você pode expandir o array <code className="bg-emerald-100 px-1 rounded">agriculturalData</code> 
-              com o resto das informações do seu CSV.
-            </p>
-            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200">
-              Localização: src/data/sampleData.ts
-            </Badge>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

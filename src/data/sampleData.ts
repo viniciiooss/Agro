@@ -1,4 +1,3 @@
-
 // Este arquivo contém os dados do CSV fornecido
 // Você pode adicionar o resto dos dados aqui conforme necessário
 
@@ -105,16 +104,22 @@ export const getUniqueProducts = () => {
   return [...new Set(agriculturalData.map(item => item.produto))];
 };
 
+// Função para obter classificações únicas
+export const getUniqueClassifications = () => {
+  return [...new Set(agriculturalData.map(item => item.classificao_produto))];
+};
+
 // Função para obter estados únicos
 export const getUniqueStates = () => {
   return [...new Set(agriculturalData.map(item => item.uf))];
 };
 
-// Função para filtrar dados por produto e/ou estado
-export const filterData = (product?: string, state?: string) => {
+// Função para filtrar dados por produto, classificação e/ou estado
+export const filterDataWithClassification = (product?: string, classification?: string, state?: string) => {
   return agriculturalData.filter(item => {
     const matchesProduct = !product || item.produto === product;
+    const matchesClassification = !classification || item.classificao_produto === classification;
     const matchesState = !state || item.uf === state;
-    return matchesProduct && matchesState;
+    return matchesProduct && matchesClassification && matchesState;
   });
 };
