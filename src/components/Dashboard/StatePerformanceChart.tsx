@@ -22,8 +22,8 @@ const StatePerformanceChart: React.FC<StatePerformanceChartProps> = ({ data }) =
   return (
     <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle>Desempenho por Estado</CardTitle>
-        <CardDescription>Variação de preço prevista para Junho nos estados selecionados.</CardDescription>
+        <CardTitle>Performance by State</CardTitle>
+        <CardDescription>Predicted price change for June in selected states.</CardDescription>
       </CardHeader>
       <CardContent>
         <div style={{ height: 400 }}>
@@ -34,7 +34,7 @@ const StatePerformanceChart: React.FC<StatePerformanceChartProps> = ({ data }) =
               <YAxis type="category" dataKey="state" width={60} />
               <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
               <Legend />
-              <Bar dataKey="change" name="Variação Prevista (%)" fill="#3B82F6" />
+              <Bar dataKey="change" name="Predicted Change (%)" fill="#3B82F6" />
             </BarChart>
           </ResponsiveContainer>
         </div>

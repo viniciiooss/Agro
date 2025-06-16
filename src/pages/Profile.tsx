@@ -9,34 +9,32 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { User, Bell, Shield, ArrowLeft, Camera, KeyRound } from 'lucide-react';
 
-// Importe a sua imagem de perfil local com um nome simples e web-amigável
 import profileImage from '@/assets/profile-picture.png'; 
 
-// Sub-componente para a aba de Perfil
+// Sub-component for the Profile tab
 const ProfileTabContent = () => {
   return (
     <Card className="shadow-lg border-0">
       <CardHeader>
-        <CardTitle>Informações do Perfil</CardTitle>
-        <CardDescription>Atualize a sua foto e detalhes pessoais aqui.</CardDescription>
+        <CardTitle>Profile Information</CardTitle>
+        <CardDescription>Update your photo and personal details here.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center space-x-4">
           <Avatar className="h-24 w-24">
-            {/* Use a imagem importada aqui */}
             <AvatarImage src={profileImage} alt="Carlos Vinicios" />
             <AvatarFallback>CV</AvatarFallback>
           </Avatar>
           <Button variant="outline">
             <Camera className="w-4 h-4 mr-2" />
-            Alterar Foto
+            Change Photo
           </Button>
         </div>
         <Separator />
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name">Name</Label>
               <Input id="name" defaultValue="Carlos Vinicios" />
             </div>
             <div className="space-y-2">
@@ -46,40 +44,40 @@ const ProfileTabContent = () => {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button>Guardar Alterações</Button>
+          <Button>Save Changes</Button>
         </div>
       </CardContent>
     </Card>
   );
 };
 
-// Sub-componente para a aba de Notificações
+// Sub-component for the Notifications tab
 const NotificationsTabContent = () => {
   return (
     <Card className="shadow-lg border-0">
       <CardHeader>
-        <CardTitle>Notificações</CardTitle>
-        <CardDescription>Escolha como e sobre o que quer ser notificado.</CardDescription>
+        <CardTitle>Notifications</CardTitle>
+        <CardDescription>Choose how and what you want to be notified about.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between p-4 rounded-lg border">
           <div>
-            <Label htmlFor="price-alerts" className="font-medium">Alertas de Preço</Label>
-            <p className="text-sm text-muted-foreground">Receber notificações sobre mudanças significativas nos preços.</p>
+            <Label htmlFor="price-alerts" className="font-medium">Price Alerts</Label>
+            <p className="text-sm text-muted-foreground">Receive notifications about significant price changes.</p>
           </div>
           <Switch id="price-alerts" defaultChecked />
         </div>
         <div className="flex items-center justify-between p-4 rounded-lg border">
           <div>
-            <Label htmlFor="market-news" className="font-medium">Notícias do Mercado</Label>
-            <p className="text-sm text-muted-foreground">Receber um resumo diário das principais notícias do agronegócio.</p>
+            <Label htmlFor="market-news" className="font-medium">Market News</Label>
+            <p className="text-sm text-muted-foreground">Receive a daily summary of top agribusiness news.</p>
           </div>
           <Switch id="market-news" />
         </div>
         <div className="flex items-center justify-between p-4 rounded-lg border">
           <div>
-            <Label htmlFor="ai-analysis" className="font-medium">Análises da IA</Label>
-            <p className="text-sm text-muted-foreground">Ser notificado quando uma nova análise de IA estiver disponível.</p>
+            <Label htmlFor="ai-analysis" className="font-medium">AI Analyses</Label>
+            <p className="text-sm text-muted-foreground">Be notified when a new AI analysis is available.</p>
           </div>
           <Switch id="ai-analysis" defaultChecked />
         </div>
@@ -88,31 +86,31 @@ const NotificationsTabContent = () => {
   );
 };
 
-// Sub-componente para a aba de Segurança
+// Sub-component for the Security tab
 const SecurityTabContent = () => {
   return (
     <Card className="shadow-lg border-0">
       <CardHeader>
-        <CardTitle>Senha e Segurança</CardTitle>
-        <CardDescription>Altere a sua senha para manter a sua conta segura.</CardDescription>
+        <CardTitle>Password & Security</CardTitle>
+        <CardDescription>Change your password to keep your account secure.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="current-password">Senha Atual</Label>
+          <Label htmlFor="current-password">Current Password</Label>
           <Input id="current-password" type="password" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="new-password">Nova Senha</Label>
+          <Label htmlFor="new-password">New Password</Label>
           <Input id="new-password" type="password" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm-password">Confirmar Nova Senha</Label>
+          <Label htmlFor="confirm-password">Confirm New Password</Label>
           <Input id="confirm-password" type="password" />
         </div>
         <div className="flex justify-end pt-2">
           <Button>
             <KeyRound className="w-4 h-4 mr-2" />
-            Alterar Senha
+            Change Password
           </Button>
         </div>
       </CardContent>
@@ -120,7 +118,7 @@ const SecurityTabContent = () => {
   );
 };
 
-// Componente principal da Página de Perfil
+// Main Profile Page Component
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('profile');
 
@@ -152,7 +150,7 @@ const ProfilePage = () => {
           <Button asChild variant="outline" size="sm">
             <Link to="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Dashboard
+              Back to Dashboard
             </Link>
           </Button>
         </div>
@@ -160,12 +158,12 @@ const ProfilePage = () => {
       
       <main className="container mx-auto px-4 py-8 md:py-12">
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">A sua Conta</h1>
-          <p className="text-gray-500">Faça a gestão das suas informações de perfil e configurações de segurança.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Your Account</h1>
+          <p className="text-gray-500">Manage your profile information and security settings.</p>
         </div>
 
         <div className="grid md:grid-cols-4 gap-8">
-          {/* Menu Lateral de Navegação */}
+          {/* Side Navigation Menu */}
           <aside className="md:col-span-1">
             <nav className="flex flex-col space-y-1">
               <Button
@@ -174,7 +172,7 @@ const ProfilePage = () => {
                 onClick={() => setActiveTab('profile')}
               >
                 <User className="w-4 h-4 mr-2" />
-                Perfil
+                Profile
               </Button>
               <Button
                 variant={activeTab === 'notifications' ? 'secondary' : 'ghost'}
@@ -182,7 +180,7 @@ const ProfilePage = () => {
                 onClick={() => setActiveTab('notifications')}
               >
                 <Bell className="w-4 h-4 mr-2" />
-                Notificações
+                Notifications
               </Button>
               <Button
                 variant={activeTab === 'security' ? 'secondary' : 'ghost'}
@@ -190,12 +188,12 @@ const ProfilePage = () => {
                 onClick={() => setActiveTab('security')}
               >
                 <Shield className="w-4 h-4 mr-2" />
-                Segurança
+                Security
               </Button>
             </nav>
           </aside>
 
-          {/* Área de Conteúdo Principal */}
+          {/* Main Content Area */}
           <div className="md:col-span-3">
             {renderContent()}
           </div>

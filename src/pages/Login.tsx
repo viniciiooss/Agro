@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,8 +19,8 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simular login/cadastro
-    console.log(isLogin ? 'Login' : 'Cadastro', formData);
+    // Simulate login/signup
+    console.log(isLogin ? 'Login' : 'Signup', formData);
     navigate('/dashboard');
   };
 
@@ -48,12 +47,12 @@ const Login = () => {
         <Card className="glass-card shadow-xl">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
-              {isLogin ? 'Entrar na Plataforma' : 'Criar Conta'}
+              {isLogin ? 'Log in to the Platform' : 'Create Account'}
             </CardTitle>
             <CardDescription>
               {isLogin 
-                ? 'Acesse sua conta para visualizar as previsões' 
-                : 'Cadastre-se para começar a usar nossa plataforma'
+                ? 'Access your account to view the predictions' 
+                : 'Sign up to start using our platform'
               }
             </CardDescription>
           </CardHeader>
@@ -62,37 +61,37 @@ const Login = () => {
               {!isLogin && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nome Completo</Label>
+                    <Label htmlFor="name">Full Name</Label>
                     <Input
                       id="name"
                       name="name"
                       type="text"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="Seu nome completo"
+                      placeholder="Your full name"
                       required={!isLogin}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="company">Empresa/Propriedade</Label>
+                    <Label htmlFor="company">Company/Property</Label>
                     <Input
                       id="company"
                       name="company"
                       type="text"
                       value={formData.company}
                       onChange={handleInputChange}
-                      placeholder="Nome da empresa ou propriedade"
+                      placeholder="Name of the company or property"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="state">Estado</Label>
+                    <Label htmlFor="state">State</Label>
                     <Input
                       id="state"
                       name="state"
                       type="text"
                       value={formData.state}
                       onChange={handleInputChange}
-                      placeholder="Ex: SP, MG, PR..."
+                      placeholder="e.g., SP, MG, PR..."
                     />
                   </div>
                 </>
@@ -106,20 +105,20 @@ const Login = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="seu@email.com"
+                  placeholder="your@email.com"
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  placeholder="Sua senha"
+                  placeholder="Your password"
                   required
                 />
               </div>
@@ -128,18 +127,18 @@ const Login = () => {
                 type="submit" 
                 className="w-full bg-gradient-to-r from-agro-600 to-primary hover:from-agro-700 hover:to-agro-600"
               >
-                {isLogin ? 'Entrar' : 'Criar Conta'}
+                {isLogin ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                {isLogin ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+                {isLogin ? "Don't have an account?" : 'Already have an account?'}
                 <button
                   onClick={() => setIsLogin(!isLogin)}
                   className="ml-1 text-primary hover:text-agro-700 font-medium"
                 >
-                  {isLogin ? 'Cadastre-se' : 'Faça login'}
+                  {isLogin ? 'Sign up' : 'Log in'}
                 </button>
               </p>
             </div>
@@ -150,7 +149,7 @@ const Login = () => {
                 className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
               >
                 <ArrowDown className="w-4 h-4 mr-1 rotate-90" />
-                Voltar ao início
+                Back to home
               </Link>
             </div>
           </CardContent>

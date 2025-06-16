@@ -6,7 +6,7 @@ import { Sparkles, LoaderCircle, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface AIAnalysisCardProps {
-  data: any[]; // Os dados filtrados do dashboard
+  data: any[];
 }
 
 const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ data }) => {
@@ -30,14 +30,14 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ data }) => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Falha ao buscar análise da IA.');
+        throw new Error(errorData.error || 'Failed to fetch AI analysis.');
       }
 
       const result = await response.json();
       setAnalysis(result.analysis);
 
-    } catch (err: any) { // <-- ESTA É A LINHA CORRIGIDA
-      setError(err.message || 'Ocorreu um erro desconhecido.');
+    } catch (err: any) {
+      setError(err.message || 'An unknown error occurred.');
     } finally {
       setLoading(false);
     }
@@ -50,38 +50,38 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ data }) => {
       const percentageChange = lastPrice > 0 ? ((predictedPrice - lastPrice) / lastPrice) * 100 : 0;
       
       return {
-        produto: `${d.produto} (${d.uf})`,
-        variacao_prevista_perc: parseFloat(percentageChange.toFixed(1)),
-        acuracia_modelo_perc: d.acuracia_modelo_perc,
-        volatilidade_previsao_brl: parseFloat((d.previsao_max_jun - d.previsao_min_jun).toFixed(2))
+        product: `${d.produto} (${d.uf})`,
+        predicted_change_perc: parseFloat(percentageChange.toFixed(1)),
+        model_accuracy_perc: d.acuracia_modelo_perc,
+        forecast_volatility_brl: parseFloat((d.previsao_max_jun - d.previsao_min_jun).toFixed(2))
       };
     });
 
     return `
-      **PERSONA:** Você é um consultor financeiro sênior e analista de mercado, especializado em commodities agrícolas para o mercado brasileiro. Sua linguagem é profissional, direta e focada em insights acionáveis.
+      **PERSONA:** You are a senior financial consultant and market analyst specializing in agricultural commodities for the Brazilian market. Your language is professional, direct, and focused on actionable insights.
 
-      **TAREFA:** Analise o resumo de dados de previsão de preços agrícolas abaixo. Com base exclusivamente nestes dados, elabore um relatório de consultoria para um cliente (investidor ou produtor).
+      **TASK:** Analyze the summary of agricultural price forecast data below. Based exclusively on this data, write a consulting report for a client (investor or producer).
 
-      **DADOS PARA ANÁLISE:**
+      **DATA FOR ANALYSIS:**
       ${JSON.stringify(summary, null, 2)}
 
-      **ESTRUTURA OBRIGATÓRIA DO RELATÓRIO (use este formato):**
+      **MANDATORY REPORT STRUCTURE (use this format):**
 
-      ### Relatório de Análise de Mercado Agrícola
+      ### Agricultural Market Analysis Report
 
-      **1. Análise de Sentimento:**
-      Descreva o sentimento geral do mercado (otimista, pessimista ou misto) com base na proporção de produtos com previsão de alta versus queda nos dados fornecidos. Justifique sua análise.
+      **1. Sentiment Analysis:**
+      Describe the overall market sentiment (optimistic, pessimistic, or mixed) based on the proportion of products with a predicted rise versus a fall in the provided data. Justify your analysis.
 
-      **2. Oportunidades de Destaque:**
-      Liste as 2 ou 3 melhores oportunidades de investimento (maiores variações positivas). Para cada uma, comente sobre o balanço entre o retorno previsto (variacao_prevista_perc) e a confiança na previsão (acuracia_modelo_perc e volatilidade_previsao_brl). Uma alta acurácia e baixa volatilidade tornam a oportunidade mais sólida.
+      **2. Key Opportunities:**
+      List the 2 or 3 best investment opportunities (highest positive variations). For each, comment on the balance between the expected return (predicted_change_perc) and the confidence in the forecast (model_accuracy_perc and forecast_volatility_brl). High accuracy and low volatility make an opportunity more solid.
 
-      **3. Pontos de Atenção e Riscos:**
-      Liste os 2 ou 3 maiores riscos (variações mais negativas). Para cada um, além de citar a queda, comente sobre a volatilidade. Se a volatilidade for alta, o risco é ainda maior. Sugira uma ação para cada ponto (ex: "Monitorar de perto", "Considerar venda antecipada", "Evitar exposição").
+      **3. Points of Concern and Risks:**
+      List the 2 or 3 biggest risks (most negative variations). For each, besides citing the drop, comment on the volatility. If volatility is high, the risk is even greater. Suggest an action for each point (e.g., "Monitor closely," "Consider early selling," "Avoid exposure").
 
-      **4. Tese de Investimento (Recomendação Estratégica):**
-      Conclua com uma recomendação final clara e acionável, em 2-3 frases, como um consultor faria para um cliente. Exemplo: "Dado o cenário, a estratégia recomendada é concentrar capital nas oportunidades de [Produto A], que apresenta o melhor balanço risco/retorno, enquanto se protege dos riscos em [Produto B] através de [ação sugerida]."
+      **4. Investment Thesis (Strategic Recommendation):**
+      Conclude with a clear and actionable final recommendation, in 2-3 sentences, as a consultant would for a client. Example: "Given the scenario, the recommended strategy is to concentrate capital on [Product A] opportunities, which present the best risk/return balance, while hedging against risks in [Product B] through [suggested action]."
 
-      Use Markdown para formatar o relatório.
+      Use Markdown to format the report.
     `;
   };
 
@@ -90,10 +90,10 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ data }) => {
       <CardHeader>
         <CardTitle className="flex items-center text-emerald-800">
           <Sparkles className="w-5 h-5 mr-2" />
-          Análise com IA
+          AI Analysis
         </CardTitle>
         <CardDescription>
-          Obtenha insights gerados por IA com base nos filtros atuais.
+          Get AI-generated insights based on the current filters.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col flex-grow">
@@ -101,13 +101,13 @@ const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ data }) => {
           {loading ? (
             <>
               <LoaderCircle className="w-4 h-4 mr-2 animate-spin" />
-              Analisando...
+              Analyzing...
             </>
           ) : (
-            'Gerar Análise'
+            'Generate Analysis'
           )}
         </Button>
-        {data.length === 0 && <p className="text-xs text-center mt-2 text-gray-500">Selecione algum filtro para gerar a análise.</p>}
+        {data.length === 0 && <p className="text-xs text-center mt-2 text-gray-500">Select filters to generate an analysis.</p>}
 
         <div className="mt-4 flex-grow min-h-[150px]">
           {loading && (

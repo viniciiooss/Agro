@@ -1,5 +1,7 @@
+// src/components/Dashboard/PriceChart.tsx
+
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, BarChart3 } from 'lucide-react';
 
@@ -11,12 +13,12 @@ interface PriceChartProps {
 
 const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
   const chartData = [
-    { month: 'Janeiro', atual: data[0]?.preco_atual_jan || 0, previsao: data[0]?.previsao_jan || 0 },
-    { month: 'Fevereiro', atual: data[0]?.preco_atual_fev || 0, previsao: data[0]?.previsao_fev || 0 },
-    { month: 'Março', atual: data[0]?.preco_atual_mar || null, previsao: data[0]?.previsao_mar || 0 },
-    { month: 'Abril', atual: data[0]?.preco_atual_abr || null, previsao: data[0]?.previsao_abr || 0 },
-    { month: 'Maio', atual: data[0]?.preco_atual_mai || null, previsao: data[0]?.previsao_mai || 0 },
-    { month: 'Junho', atual: null, previsao: data[0]?.previsao_jun || 0 },
+    { month: 'Jan', current: data[0]?.preco_atual_jan || 0, forecast: data[0]?.previsao_jan || 0 },
+    { month: 'Feb', current: data[0]?.preco_atual_fev || 0, forecast: data[0]?.previsao_fev || 0 },
+    { month: 'Mar', current: data[0]?.preco_atual_mar || null, forecast: data[0]?.previsao_mar || 0 },
+    { month: 'Apr', current: data[0]?.preco_atual_abr || null, forecast: data[0]?.previsao_abr || 0 },
+    { month: 'May', current: data[0]?.preco_atual_mai || null, forecast: data[0]?.previsao_mai || 0 },
+    { month: 'Jun', current: null, forecast: data[0]?.previsao_jun || 0 },
   ];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -26,7 +28,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
           <p className="font-semibold text-gray-800 mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
-              <span className="font-medium">{entry.name}:</span> R$ {entry.value?.toFixed(2)}
+              <span className="font-medium">{entry.name}:</span> $ {entry.value?.toFixed(2)}
             </p>
           ))}
         </div>
@@ -35,11 +37,10 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
     return null;
   };
 
-  const lastMonthWithPrice = chartData.slice().reverse().find(d => d.atual !== null);
-  const currentPrice = lastMonthWithPrice ? lastMonthWithPrice.atual : 0;
+  const lastMonthWithPrice = chartData.slice().reverse().find(d => d.current !== null);
+  const currentPrice = lastMonthWithPrice ? lastMonthWithPrice.current : 0;
   const predictedPrice = data[0]?.previsao_jun || 0;
 
-  // Corrigido para evitar divisão por zero
   const change = currentPrice > 0 ? ((predictedPrice - currentPrice) / currentPrice) * 100 : 0;
   const isPositive = change > 0;
 
@@ -63,7 +64,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
                 {isPositive ? '+' : ''}{change.toFixed(1)}%
               </span>
             </div>
-            <p className="text-xs text-gray-600">Variação prevista</p>
+            <p className="text-xs text-gray-600">Predicted change</p>
           </div>
         </div>
       </CardHeader>
@@ -72,66 +73,37 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <defs>
-                <linearGradient id="colorAtual" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
                 </linearGradient>
-                <linearGradient id="colorPrevisao" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis 
-                dataKey="month" 
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                axisLine={{ stroke: '#D1D5DB' }}
-              />
-              <YAxis 
-                tick={{ fontSize: 12, fill: '#6B7280' }}
-                axisLine={{ stroke: '#D1D5DB' }}
-                tickFormatter={(value) => `R$ ${value.toFixed(1)}`}
-              />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={{ stroke: '#D1D5DB' }} />
+              <YAxis tick={{ fontSize: 12, fill: '#6B7280' }} axisLine={{ stroke: '#D1D5DB' }} tickFormatter={(value) => `$${value.toFixed(1)}`} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                wrapperStyle={{ paddingTop: '20px' }}
-                iconType="line"
-              />
-              <Area
-                type="monotone"
-                dataKey="atual"
-                stroke="#3B82F6"
-                fillOpacity={1}
-                fill="url(#colorAtual)"
-                strokeWidth={3}
-                name="Preço Atual"
-                connectNulls={false}
-              />
-              <Area
-                type="monotone"
-                dataKey="previsao"
-                stroke="#10B981"
-                fillOpacity={1}
-                fill="url(#colorPrevisao)"
-                strokeWidth={3}
-                strokeDasharray="8 4"
-                name="Previsão"
-              />
+              <Legend wrapperStyle={{ paddingTop: '20px' }} iconType="line" />
+              <Area type="monotone" dataKey="current" stroke="#3B82F6" fillOpacity={1} fill="url(#colorCurrent)" strokeWidth={3} name="Current Price" connectNulls={false} />
+              <Area type="monotone" dataKey="forecast" stroke="#10B981" fillOpacity={1} fill="url(#colorForecast)" strokeWidth={3} strokeDasharray="8 4" name="Forecast" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
         
         <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
           <div className="text-center">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Atual ({lastMonthWithPrice ? lastMonthWithPrice.month : 'N/A'})</p>
-            <p className="text-lg font-bold text-blue-600">R$ {currentPrice.toFixed(2)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Current ({lastMonthWithPrice ? lastMonthWithPrice.month : 'N/A'})</p>
+            <p className="text-lg font-bold text-blue-600">$ {currentPrice.toFixed(2)}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Previsão (Jun)</p>
-            <p className="text-lg font-bold text-green-600">R$ {predictedPrice.toFixed(2)}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Forecast (Jun)</p>
+            <p className="text-lg font-bold text-green-600">$ {predictedPrice.toFixed(2)}</p>
           </div>
           <div className="text-center">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Acurácia</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Accuracy</p>
             <p className="text-lg font-bold text-indigo-600">{data[0]?.acuracia_modelo_perc.toFixed(1)}%</p>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Label } from "@/components/ui/label";
-import { ChartBar, Search, User, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { ChartBar, Search, User, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PriceChart from '@/components/Dashboard/PriceChart';
 import RecommendationCard from '@/components/Dashboard/RecommendationCard';
@@ -85,9 +85,9 @@ const Dashboard = () => {
 
     if (filteredData.length > 0) {
       const averageData: any = {
-        produto: selectedProduct === 'all' ? 'Média de Produtos' : selectedProduct,
-        classificao_produto: selectedClassification === 'all' ? 'Média' : selectedClassification,
-        uf: selectedState === 'all' ? 'Todos' : selectedState,
+        produto: selectedProduct === 'all' ? 'Average of Products' : selectedProduct,
+        classificao_produto: selectedClassification === 'all' ? 'Average' : selectedClassification,
+        uf: selectedState === 'all' ? 'All' : selectedState,
         acuracia_modelo_perc: 0,
       };
 
@@ -154,7 +154,7 @@ const Dashboard = () => {
           </Link>
           <div className="flex items-center space-x-2 md:space-x-4">
             <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-emerald-700 hidden sm:block">
-                Notícias
+                News
             </Link>
             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
               Dashboard
@@ -162,7 +162,7 @@ const Dashboard = () => {
             <Link to="/profile">
               <Button variant="outline" size="sm" className="hover:bg-emerald-50">
                 <User className="w-4 h-4 md:mr-2" />
-                <span className="hidden md:inline">Perfil</span>
+                <span className="hidden md:inline">Profile</span>
               </Button>
             </Link>
           </div>
@@ -172,10 +172,10 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">
-            Dashboard de Previsões
+            Forecast Dashboard
           </h1>
           <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-            Monitore as tendências e tome decisões estratégicas.
+            Monitor trends and make strategic decisions.
           </p>
         </div>
 
@@ -183,19 +183,19 @@ const Dashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center text-emerald-800">
               <Search className="w-5 h-5 mr-2" />
-              Filtros de Análise
+              Analysis Filters
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="product-select">Produto</Label>
+                <Label htmlFor="product-select">Product</Label>
                 <Select value={selectedProduct} onValueChange={handleProductChange}>
                   <SelectTrigger id="product-select" className="h-11 border-gray-200">
-                    <SelectValue placeholder="Todos os produtos" />
+                    <SelectValue placeholder="All products" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os produtos</SelectItem>
+                    <SelectItem value="all">All products</SelectItem>
                     {products.map(product => (
                       <SelectItem key={product} value={product}>{product}</SelectItem>
                     ))}
@@ -204,13 +204,13 @@ const Dashboard = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="class-select">Classificação</Label>
+                <Label htmlFor="class-select">Classification</Label>
                 <Select value={selectedClassification} onValueChange={handleClassificationChange}>
                   <SelectTrigger id="class-select" className="h-11 border-gray-200">
-                    <SelectValue placeholder="Todas" />
+                    <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas as classificações</SelectItem>
+                    <SelectItem value="all">All classifications</SelectItem>
                     {availableClassifications.map(c => (
                       <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}
@@ -219,13 +219,13 @@ const Dashboard = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="state-select">Estado</Label>
+                <Label htmlFor="state-select">State</Label>
                 <Select value={selectedState} onValueChange={setSelectedState}>
                   <SelectTrigger id="state-select" className="h-11 border-gray-200">
-                    <SelectValue placeholder="Todos os estados" />
+                    <SelectValue placeholder="All states" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos os estados</SelectItem>
+                    <SelectItem value="all">All states</SelectItem>
                     {availableStates.map(state => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -243,7 +243,7 @@ const Dashboard = () => {
                   variant="outline"
                   className="w-full h-11 border-emerald-200 text-emerald-700"
                 >
-                  Limpar
+                  Clear
                 </Button>
               </div>
             </div>
@@ -255,7 +255,7 @@ const Dashboard = () => {
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-lg">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-blue-700">
-                Produtos Monitorados
+                Monitored Products
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
@@ -268,7 +268,7 @@ const Dashboard = () => {
           <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-lg">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-emerald-700">
-                Acurácia Média
+                Average Accuracy
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
@@ -281,7 +281,7 @@ const Dashboard = () => {
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0 shadow-lg">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-green-700">
-                Maior Alta Prevista
+                Highest Predicted Rise
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
@@ -298,7 +298,7 @@ const Dashboard = () => {
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-lg">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-xs sm:text-sm font-medium text-purple-700">
-                Estados Cobertos
+                States Covered
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
@@ -314,13 +314,13 @@ const Dashboard = () => {
             {chartDisplayData.length > 0 ? (
                 <PriceChart
                   data={chartDisplayData}
-                  title="Evolução de Preços"
+                  title="Price Evolution"
                   product={`${chartDisplayData[0].produto} - ${chartDisplayData[0].classificao_produto} - ${chartDisplayData[0].uf}`}
                 />
               ) : (
                 <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm flex items-center justify-center h-full min-h-[400px]">
                   <div className="text-center text-gray-500">
-                    <p>Nenhum dado encontrado para os filtros selecionados.</p>
+                    <p>No data found for the selected filters.</p>
                   </div>
                 </Card>
               )
@@ -336,9 +336,9 @@ const Dashboard = () => {
         <div className="pt-8 border-t mt-8">
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent mb-2">
-                    Análises Avançadas
+                    Advanced Analytics
                 </h2>
-                <p className="text-gray-600">Explore as previsões por risco e região.</p>
+                <p className="text-gray-600">Explore forecasts by risk and region.</p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                  <RiskReturnChart data={filteredData} />
@@ -349,10 +349,10 @@ const Dashboard = () => {
         <div className="space-y-6 pt-8 border-t mt-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent mb-2">
-              Recomendações Estratégicas
+              Strategic Recommendations
             </h2>
             <p className="text-gray-600 max-w-3xl mx-auto">
-              Oportunidades de mercado ordenadas da maior para a menor variação de preço prevista.
+              Market opportunities sorted from the highest to the lowest predicted price change.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
