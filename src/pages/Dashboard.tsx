@@ -1,23 +1,26 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Label } from "@/components/ui/label";
 import { ChartBar, Search, User, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import PriceChart from '@/components/Dashboard/PriceChart';
 import RecommendationCard from '@/components/Dashboard/RecommendationCard';
 import { agriculturalData, getUniqueProducts, filterDataWithClassification } from '@/data/sampleData';
+import RiskReturnChart from '@/components/Dashboard/RiskReturnChart';
+import StatePerformanceChart from '@/components/Dashboard/StatePerformanceChart';
+import SentimentChart from '@/components/Dashboard/SentimentChart';
+import AIAnalysisCard from '@/components/Dashboard/AIAnalysisCard';
 
 const Dashboard = () => {
   const [selectedProduct, setSelectedProduct] = useState<string>('all');
   const [selectedClassification, setSelectedClassification] = useState<string>('all');
   const [selectedState, setSelectedState] = useState<string>('all');
-  
+
   const products = getUniqueProducts();
-  
-  // Filtros dependentes
+
   const availableClassifications = useMemo(() => {
     if (selectedProduct === 'all') {
       return [...new Set(agriculturalData.map(item => item.classificao_produto))];
@@ -39,49 +42,106 @@ const Dashboard = () => {
       })
       .map(item => item.uf))];
   }, [selectedProduct, selectedClassification]);
+
+  const findLastPrice = (item: any) => {
+    return item.preco_atual_mai ?? item.preco_atual_abr ?? item.preco_atual_mar ?? item.preco_atual_fev ?? item.preco_atual_jan ?? 0;
+  }
   
-  // Dados filtrados para gráficos (com estado)
   const filteredData = useMemo(() => {
-    if (selectedProduct === 'all' && selectedClassification === 'all' && selectedState === 'all') {
-      return agriculturalData.slice(0, 5);
-    }
     return filterDataWithClassification(
       selectedProduct === 'all' ? '' : selectedProduct,
-      selectedClassification === 'all' ? '' : selectedClassification, 
+      selectedClassification === 'all' ? '' : selectedClassification,
       selectedState === 'all' ? '' : selectedState
     );
   }, [selectedProduct, selectedClassification, selectedState]);
 
-  // Dados para recomendações (sem filtro de estado)
   const recommendationData = useMemo(() => {
-    if (selectedProduct === 'all' && selectedClassification === 'all') {
-      return agriculturalData;
-    }
     return filterDataWithClassification(
       selectedProduct === 'all' ? '' : selectedProduct,
       selectedClassification === 'all' ? '' : selectedClassification,
-      '' // Sem filtro de estado para recomendações
+      ''
     );
   }, [selectedProduct, selectedClassification]);
 
-  const displayData = filteredData.length > 0 ? filteredData : agriculturalData.slice(0, 5);
+  const sortedRecommendationData = useMemo(() => {
+    const dataWithChange = recommendationData.map(item => {
+      const lastPrice = findLastPrice(item);
+      const predictedPrice = item.previsao_jun || 0;
+      
+      const percentageChange = lastPrice > 0 
+          ? ((predictedPrice - lastPrice) / lastPrice) * 100 
+          : 0;
+
+      return { ...item, percentageChange };
+    });
+
+    return dataWithChange.sort((a, b) => b.percentageChange - a.percentageChange);
+  }, [recommendationData]);
+
+  const chartDisplayData = useMemo(() => {
+    if (filteredData.length === 1) {
+      return filteredData;
+    }
+
+    if (filteredData.length > 0) {
+      const averageData: any = {
+        produto: selectedProduct === 'all' ? 'Média de Produtos' : selectedProduct,
+        classificao_produto: selectedClassification === 'all' ? 'Média' : selectedClassification,
+        uf: selectedState === 'all' ? 'Todos' : selectedState,
+        acuracia_modelo_perc: 0,
+      };
+
+      const keysToAverage = [
+        "preco_atual_jan", "previsao_jan", "preco_atual_fev", "previsao_fev",
+        "preco_atual_mar", "previsao_mar", "preco_atual_abr", "previsao_abr",
+        "preco_atual_mai", "previsao_mai", "previsao_jun", "previsao_min_jun",
+        "previsao_max_jun", "acuracia_modelo_perc"
+      ];
+      
+      const counts: { [key: string]: number } = {};
+
+      keysToAverage.forEach(key => {
+        averageData[key] = 0;
+        counts[key] = 0;
+      });
+
+      filteredData.forEach(item => {
+        keysToAverage.forEach(key => {
+          if (typeof (item as any)[key] === 'number') {
+            averageData[key] += (item as any)[key];
+            counts[key]++;
+          }
+        });
+      });
+
+      keysToAverage.forEach(key => {
+        if (counts[key] > 0) {
+          averageData[key] /= counts[key];
+        }
+      });
+      
+      return [averageData];
+    }
+
+    return [];
+  }, [filteredData, selectedProduct, selectedClassification, selectedState]);
+  
+  const statCardData = filteredData.length > 0 ? filteredData : agriculturalData;
+  const monitoredProductsCount = new Set(statCardData.map(p => p.produto)).size;
 
   const handleProductChange = (value: string) => {
     setSelectedProduct(value);
-    // Reset classificação e estado quando produto muda
     setSelectedClassification('all');
     setSelectedState('all');
   };
 
   const handleClassificationChange = (value: string) => {
     setSelectedClassification(value);
-    // Reset estado quando classificação muda
     setSelectedState('all');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
-      {/* Header */}
       <header className="bg-white/90 backdrop-blur-xl border-b border-emerald-100 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-3">
@@ -92,14 +152,17 @@ const Dashboard = () => {
               AgriPredict
             </span>
           </Link>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <Link to="/news" className="text-sm font-medium text-gray-600 hover:text-emerald-700 hidden sm:block">
+                Notícias
+            </Link>
             <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
               Dashboard
             </Badge>
-            <Link to="/login">
+            <Link to="/profile">
               <Button variant="outline" size="sm" className="hover:bg-emerald-50">
-                <User className="w-4 h-4 mr-2" />
-                Perfil
+                <User className="w-4 h-4 md:mr-2" />
+                <span className="hidden md:inline">Perfil</span>
               </Button>
             </Link>
           </div>
@@ -107,75 +170,64 @@ const Dashboard = () => {
       </header>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Welcome Section */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent">
             Dashboard de Previsões
           </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Monitore as tendências e tome decisões estratégicas baseadas em dados inteligentes
+          <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
+            Monitore as tendências e tome decisões estratégicas.
           </p>
         </div>
 
-        {/* Filters */}
         <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-t-lg">
+          <CardHeader>
             <CardTitle className="flex items-center text-emerald-800">
               <Search className="w-5 h-5 mr-2" />
               Filtros de Análise
             </CardTitle>
-            <CardDescription className="text-emerald-600">
-              Selecione o produto, classificação e estado para análise detalhada
-            </CardDescription>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <CardContent className="p-4 md:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Produto</label>
+                <Label htmlFor="product-select">Produto</Label>
                 <Select value={selectedProduct} onValueChange={handleProductChange}>
-                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
+                  <SelectTrigger id="product-select" className="h-11 border-gray-200">
                     <SelectValue placeholder="Todos os produtos" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl border-0 z-50">
-                    <SelectItem value="all" className="font-medium">Todos os produtos</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os produtos</SelectItem>
                     {products.map(product => (
-                      <SelectItem key={product} value={product} className="hover:bg-emerald-50">
-                        {product}
-                      </SelectItem>
+                      <SelectItem key={product} value={product}>{product}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Classificação</label>
+                <Label htmlFor="class-select">Classificação</Label>
                 <Select value={selectedClassification} onValueChange={handleClassificationChange}>
-                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
-                    <SelectValue placeholder="Todas as classificações" />
+                  <SelectTrigger id="class-select" className="h-11 border-gray-200">
+                    <SelectValue placeholder="Todas" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl border-0 z-50">
-                    <SelectItem value="all" className="font-medium">Todas as classificações</SelectItem>
-                    {availableClassifications.map(classification => (
-                      <SelectItem key={classification} value={classification} className="hover:bg-emerald-50">
-                        {classification}
-                      </SelectItem>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as classificações</SelectItem>
+                    {availableClassifications.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Estado</label>
+                <Label htmlFor="state-select">Estado</Label>
                 <Select value={selectedState} onValueChange={setSelectedState}>
-                  <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 transition-colors">
+                  <SelectTrigger id="state-select" className="h-11 border-gray-200">
                     <SelectValue placeholder="Todos os estados" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white shadow-xl border-0 z-50">
-                    <SelectItem value="all" className="font-medium">Todos os estados</SelectItem>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os estados</SelectItem>
                     {availableStates.map(state => (
-                      <SelectItem key={state} value={state} className="hover:bg-emerald-50">
-                        {state}
-                      </SelectItem>
+                      <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -189,9 +241,9 @@ const Dashboard = () => {
                     setSelectedState('all');
                   }}
                   variant="outline"
-                  className="w-full h-12 border-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
+                  className="w-full h-11 border-emerald-200 text-emerald-700"
                 >
-                  Limpar Filtros
+                  Limpar
                 </Button>
               </div>
             </div>
@@ -199,156 +251,117 @@ const Dashboard = () => {
         </Card>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700 flex items-center">
-                <Activity className="w-4 h-4 mr-2" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-lg">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-blue-700">
                 Produtos Monitorados
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-800">
-                {displayData.length}
+            <CardContent className="p-4 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-blue-800">
+                {monitoredProductsCount}
               </div>
-              <p className="text-xs text-blue-600 mt-1">ativos no sistema</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-700 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2" />
+          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-lg">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-emerald-700">
                 Acurácia Média
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-emerald-800">
-                {displayData.length > 0 ? (displayData.reduce((acc, item) => acc + item.acuracia_modelo_perc, 0) / displayData.length).toFixed(1) : '0'}%
+            <CardContent className="p-4 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-emerald-800">
+                {statCardData.length > 0 ? (statCardData.reduce((acc, item) => acc + item.acuracia_modelo_perc, 0) / statCardData.length).toFixed(1) : '0'}%
               </div>
-              <p className="text-xs text-emerald-600 mt-1">precisão do modelo</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-green-700 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2" />
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-0 shadow-lg">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-green-700">
                 Maior Alta Prevista
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-800">
-                +{displayData.length > 0 ? Math.max(...displayData.map(item => {
-                  const current = item.preco_atual_mai || 0;
+            <CardContent className="p-4 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-green-800">
+                +{statCardData.length > 0 ? Math.max(...statCardData.map(item => {
+                  const current = findLastPrice(item);
                   const predicted = item.previsao_jun || 0;
                   return current > 0 ? ((predicted - current) / current) * 100 : 0;
                 })).toFixed(1) : '0'}%
               </div>
-              <p className="text-xs text-green-600 mt-1">oportunidade de ganho</p>
             </CardContent>
           </Card>
           
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-purple-700 flex items-center">
-                <ChartBar className="w-4 h-4 mr-2" />
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-lg">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-purple-700">
                 Estados Cobertos
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-purple-800">
+            <CardContent className="p-4 pt-0">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-800">
                 {selectedState === 'all' ? availableStates.length : 1}
               </div>
-              <p className="text-xs text-purple-600 mt-1">regiões analisadas</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Chart and Summary Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            {displayData.slice(0, 1).map((item, index) => (
-              <PriceChart
-                key={index}
-                data={[item]}
-                title="Evolução de Preços"
-                product={`${item.produto} - ${item.classificao_produto} - ${item.uf}`}
-              />
-            ))}
+            {chartDisplayData.length > 0 ? (
+                <PriceChart
+                  data={chartDisplayData}
+                  title="Evolução de Preços"
+                  product={`${chartDisplayData[0].produto} - ${chartDisplayData[0].classificao_produto} - ${chartDisplayData[0].uf}`}
+                />
+              ) : (
+                <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm flex items-center justify-center h-full min-h-[400px]">
+                  <div className="text-center text-gray-500">
+                    <p>Nenhum dado encontrado para os filtros selecionados.</p>
+                  </div>
+                </Card>
+              )
+            }
           </div>
           
-          <Card className="shadow-lg border-0 bg-white/90 backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-t-lg">
-              <CardTitle className="flex items-center text-emerald-800">
-                <ChartBar className="w-5 h-5 mr-2" />
-                Resumo Executivo
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
-                  <div className="flex items-center mb-2">
-                    <TrendingUp className="w-5 h-5 text-green-600 mr-2" />
-                    <h4 className="font-semibold text-green-800">Oportunidades</h4>
-                  </div>
-                  <p className="text-sm text-green-700">
-                    {displayData.filter(item => {
-                      const current = item.preco_atual_mai || 0;
-                      const predicted = item.previsao_jun || 0;
-                      return predicted > current * 1.05;
-                    }).length} produtos com alta prevista acima de 5%
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-100">
-                  <div className="flex items-center mb-2">
-                    <TrendingDown className="w-5 h-5 text-yellow-600 mr-2" />
-                    <h4 className="font-semibold text-yellow-800">Atenção</h4>
-                  </div>
-                  <p className="text-sm text-yellow-700">
-                    {displayData.filter(item => {
-                      const current = item.preco_atual_mai || 0;
-                      const predicted = item.previsao_jun || 0;
-                      return predicted < current * 0.95;
-                    }).length} produtos com queda prevista acima de 5%
-                  </p>
-                </div>
-                
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                  <div className="flex items-center mb-2">
-                    <Activity className="w-5 h-5 text-blue-600 mr-2" />
-                    <h4 className="font-semibold text-blue-800">Estáveis</h4>
-                  </div>
-                  <p className="text-sm text-blue-700">
-                    {displayData.filter(item => {
-                      const current = item.preco_atual_mai || 0;
-                      const predicted = item.previsao_jun || 0;
-                      const change = Math.abs((predicted - current) / current);
-                      return change <= 0.05;
-                    }).length} produtos com preços estáveis
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col gap-8">
+            <SentimentChart data={statCardData} />
+            <AIAnalysisCard data={filteredData} />
+          </div>
         </div>
 
-        {/* Recommendations */}
-        <div className="space-y-6">
+        <div className="pt-8 border-t mt-8">
+            <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent mb-2">
+                    Análises Avançadas
+                </h2>
+                <p className="text-gray-600">Explore as previsões por risco e região.</p>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 <RiskReturnChart data={filteredData} />
+                 <StatePerformanceChart data={filteredData} />
+            </div>
+        </div>
+
+        <div className="space-y-6 pt-8 border-t mt-8">
           <div className="text-center">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-500 bg-clip-text text-transparent mb-2">
               Recomendações Estratégicas
             </h2>
-            <p className="text-gray-600">Insights baseados em inteligência artificial para suas decisões</p>
+            <p className="text-gray-600 max-w-3xl mx-auto">
+              Oportunidades de mercado ordenadas da maior para a menor variação de preço prevista.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {recommendationData.slice(0, 6).map((item, index) => (
+            {sortedRecommendationData.map((item, index) => (
               <RecommendationCard
                 key={`${item.produto}-${item.classificao_produto}-${item.uf}-${index}`}
                 product={item.produto}
                 classification={item.classificao_produto}
-                currentPrice={item.preco_atual_mai || 0}
+                currentPrice={findLastPrice(item)}
                 predictedPrice={item.previsao_jun || 0}
                 accuracy={item.acuracia_modelo_perc}
                 state={item.uf}

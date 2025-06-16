@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +13,9 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
   const chartData = [
     { month: 'Janeiro', atual: data[0]?.preco_atual_jan || 0, previsao: data[0]?.previsao_jan || 0 },
     { month: 'Fevereiro', atual: data[0]?.preco_atual_fev || 0, previsao: data[0]?.previsao_fev || 0 },
-    { month: 'Março', atual: data[0]?.preco_atual_mar || 0, previsao: data[0]?.previsao_mar || 0 },
-    { month: 'Abril', atual: data[0]?.preco_atual_abr || 0, previsao: data[0]?.previsao_abr || 0 },
-    { month: 'Maio', atual: data[0]?.preco_atual_mai || 0, previsao: data[0]?.previsao_mai || 0 },
+    { month: 'Março', atual: data[0]?.preco_atual_mar || null, previsao: data[0]?.previsao_mar || 0 },
+    { month: 'Abril', atual: data[0]?.preco_atual_abr || null, previsao: data[0]?.previsao_abr || 0 },
+    { month: 'Maio', atual: data[0]?.preco_atual_mai || null, previsao: data[0]?.previsao_mai || 0 },
     { month: 'Junho', atual: null, previsao: data[0]?.previsao_jun || 0 },
   ];
 
@@ -36,9 +35,12 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
     return null;
   };
 
-  const currentPrice = data[0]?.preco_atual_mai || 0;
+  const lastMonthWithPrice = chartData.slice().reverse().find(d => d.atual !== null);
+  const currentPrice = lastMonthWithPrice ? lastMonthWithPrice.atual : 0;
   const predictedPrice = data[0]?.previsao_jun || 0;
-  const change = ((predictedPrice - currentPrice) / currentPrice) * 100;
+
+  // Corrigido para evitar divisão por zero
+  const change = currentPrice > 0 ? ((predictedPrice - currentPrice) / currentPrice) * 100 : 0;
   const isPositive = change > 0;
 
   return (
@@ -121,7 +123,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, title, product }) => {
         
         <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
           <div className="text-center">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Atual (Maio)</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Atual ({lastMonthWithPrice ? lastMonthWithPrice.month : 'N/A'})</p>
             <p className="text-lg font-bold text-blue-600">R$ {currentPrice.toFixed(2)}</p>
           </div>
           <div className="text-center">
